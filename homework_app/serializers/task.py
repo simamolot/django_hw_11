@@ -1,19 +1,63 @@
+from datetime import date
+
 from rest_framework import serializers
 
-from homework_app.models.task import Task
+from homework_app.models.task import Category
+from homework_app.models.task import SubTask, Task
 
 
-class TaskSerializer(serializers.ModelSerializer):
+class SubTaskCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubTask
+        read_only_fields = ('created_at',)
+
+
+
+
+class CategoryCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+
+    def validate_title(self, data):
+        if Category.object.filter(title=data).exists():
+            raise serializers.ValidationError('Title already exists')
+        return data
+
+
+    def create(self, validated_data):
+        if Category.object.filter(title=validated_data['title']).exists():
+            raise serializers.ValidationError('Title already exists')
+        return validated_data
+
+    def update(self, instance, validated_data):
+        if 'title' in validated_data and instance.title != instance.title:
+            if Category.object.filter(title=validated_data['title']).exists():
+                raise serializers.ValidationError('Title already exists')
+
+        instance.title = validated_data['title']
+        instance.save()
+        return instance
+
+
+class TaskDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = ['title', 'description', 'status', 'deadline']
+        fields = '__all__'
+
+class SubTaskDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubTask
+        fields = '__all__'
 
 
-data1 = {'title': 'Complete Homework',
-         'description': 'Help complete homework',
-         'status': '',
-         'deadline': ''}
+class TaskCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = ['title', 'description', 'deadline']
 
-serializer = TaskSerializer(data=data1)
-if serializer.is_valid():
-    print('Good data', serializer.validated_data)
+    def validate_deadline(self, value):
+        if value < date.today():
+            raise serializers.ValidationError("Дата не может быть в прошлом.")
+        return value
+
+
