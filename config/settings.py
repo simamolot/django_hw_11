@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #local app
     'homework_app.apps.HomeworkAppConfig',
+    'django_filters',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +55,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 5,
+}
 
 ROOT_URLCONF = 'config.urls'
 
